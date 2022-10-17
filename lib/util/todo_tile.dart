@@ -1,7 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:shake/shake.dart';
 
-class ToDoTile extends StatelessWidget {
+class ToDoTile extends StatefulWidget {
   final String taskName;
   final bool taskCompleted;
   Function(bool?)? onChange;
@@ -14,6 +15,39 @@ class ToDoTile extends StatelessWidget {
     required this.onChange,
     required this.deleteFunction,
   }) : super(key: key);
+
+  @override
+  State<ToDoTile> createState() => _ToDoTileState();
+}
+
+class _ToDoTileState extends State<ToDoTile> {
+  @override
+  void initState() {
+    super.initState();
+    ShakeDetector detector = ShakeDetector.autoStart(
+      onPhoneShake: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Shake! delete task ;)',
+              style: TextStyle(
+                color: Colors.amber,
+              ),
+            ),
+          ),
+        );
+        setState(() {
+          widget.deleteFunction!(context);
+        });
+      },
+      minimumShakeCount: 1,
+      shakeSlopTimeMS: 600,
+      shakeCountResetTime: 5000,
+      shakeThresholdGravity: 2.7,
+    );
+
+    // ShakeDetector.waitForStart() waits for user to call detector.startListening();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +68,7 @@ class ToDoTile extends StatelessWidget {
               color: Colors.amber,
             )),
         onDismissed: (direction) {
-          deleteFunction!(context);
+          widget.deleteFunction!(context);
         },
         key: UniqueKey(),
         child: Container(
@@ -47,16 +81,16 @@ class ToDoTile extends StatelessWidget {
           child: Row(
             children: [
               Checkbox(
-                value: taskCompleted,
-                onChanged: onChange,
+                value: widget.taskCompleted,
+                onChanged: widget.onChange,
                 activeColor: Colors.black,
               ),
               Expanded(
                 child: Text(
-                  taskName,
+                  widget.taskName,
                   style: TextStyle(
                     overflow: TextOverflow.fade,
-                    decoration: taskCompleted
+                    decoration: widget.taskCompleted
                         ? TextDecoration.lineThrough
                         : TextDecoration.none,
                     fontSize: 25,
